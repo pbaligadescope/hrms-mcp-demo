@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { registerHrTools, type Caller } from "@/lib/mcp/tools";
+import { authenticate, AuthError } from "@/lib/mcp/descope-auth";
 
 /**
  * The Matrix Technologies MCP server, at the same URL in every stage.
@@ -25,11 +26,36 @@ async function serve(request: Request, caller: Caller): Promise<Response> {
   return transport.handleRequest(request);
 }
 
+/** Tells the MCP client where to find this server's OAuth metadata, which points at Descope. */
+function unauthorized(request: Request, error: AuthError): Response {
+  const origin = new URL(request.url).origin;
+  const metadata = `${origin}/.well-known/oauth-protected-resource/api/mcp`;
+  const code = error.status === 403 ? "insufficient_scope" : "invalid_token";
+  return Response.json(
+    { error: code, error_description: error.message },
+    {
+      status: error.status,
+      headers: {
+        "WWW-Authenticate": `Bearer error="${code}", error_description="${error.message.replace(/"/g, "'")}", resource_metadata="${metadata}"`,
+      },
+    },
+  );
+}
+
 async function handle(request: Request): Promise<Response> {
   const stage = process.env.DEMO_STAGE ?? "1";
 
   if (stage === "2") {
     return serve(request, { kind: "anonymous" });
+  }
+
+  if (stage === "3") {
+    try {
+      return serve(request, await authenticate(request));
+    } catch (e) {
+      if (e instanceof AuthError) return unauthorized(request, e);
+      throw e;
+    }
   }
 
   return Response.json({ error: "Not found" }, { status: 404 });

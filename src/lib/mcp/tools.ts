@@ -124,7 +124,7 @@ export function registerHrTools(server: McpServer, caller: Caller, channel: Chan
       const emp = db.employees.find((e) => e.id === employee_id);
       if (!emp) return ok(`No employee with id ${employee_id}.`);
       const isSelf = caller.kind === "user" && caller.employee.id === emp.id;
-      if (!isSelf) requirePermission(caller, "salaries:read");
+      requirePermission(caller, isSelf ? "profile:read" : "salaries:read");
       await log(channel, caller, `read the salary of ${emp.name}`);
       return ok({ employee: emp.name, salary: aud(emp.salary) });
     }),

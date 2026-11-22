@@ -4,7 +4,7 @@ A demo of a web portal that gains MCP access, in three stages:
 
 1. **Stage 1:** an HR and expenses portal with Descope login (magic link). No MCP.
 2. **Stage 2:** the same portal plus an MCP server with **no auth** at `/api/mcp`, to show the problem.
-3. **Stage 3 (next):** the same `/api/mcp` URL secured with Descope OAuth, so each persona gets the right data or a denial.
+3. **Stage 3:** the same `/api/mcp` URL secured with Descope OAuth, so each persona gets the right data or a denial.
 
 Claude is the MCP client in stages 2 and 3.
 
@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Set `DEMO_STAGE` in `.env.local` to pick the stage (1, 2 or 3). See [DEMO.md](DEMO.md) for the run sheet.
+Set `DEMO_STAGE` in `.env.local` to pick the stage (1, 2 or 3). See [DEMO.md](DEMO.md) for the run sheet and [DESCOPE-SETUP.md](DESCOPE-SETUP.md) for every Descope console step.
 
 Open http://localhost:3010, enter one of the persona emails, and click the magic link in Gmail.
 
@@ -50,5 +50,7 @@ To put the demo data back to its starting state, stop the server and run `npm ru
 - `src/app/dashboard/actions.ts` checks the permission again on the server for every change.
 - `src/app/api/mcp/route.ts` is the MCP server. `DEMO_STAGE` decides whether it is off (1), released without auth (2) or secured with Descope (3).
 - `src/lib/mcp/tools.ts` holds the MCP tools. They take a `Caller`, which is `anonymous` in Stage 2 and a verified Descope user in Stage 3.
+- `src/lib/mcp/descope-auth.ts` validates Descope access tokens in Stage 3 (signature, issuer, expiry, audience) and works out the caller's permissions from their role and granted scopes.
+- `src/app/api/oauth-protected-resource/route.ts` serves `/.well-known/oauth-protected-resource`, which tells MCP clients that Descope is the authorization server.
 - `src/lib/db.ts` keeps the data in `data/db.json`, so the portal and the MCP servers (stages 2 and 3) share it.
 - The activity log on the dashboard records who did what and through which channel (portal or MCP).
