@@ -76,18 +76,29 @@ Optional for the demo: open the flow to show the magic link step.
 
   Talking point: Descope writes this URL into every access token as the **audience** (`aud`). The MCP server rejects tokens issued for any other app, so a stolen portal session token is useless here.
 
-### 3.2 Scopes
+### 3.2 MCP Server Scopes
 
-In the MCP Server's **Scopes** section, add 4 scopes. Map each one to the permissions it unlocks:
+In the MCP Server's **MCP Server Scopes** section, add 4 scopes. Leave **Connection scope mapping** empty, because these tools don't call third-party APIs:
 
-| Scope | Description | Maps to permissions | Optional |
-| --- | --- | --- | --- |
-| `hr:profile` | See your own profile and pay | `profile:read` | no |
-| `hr:expenses` | See and submit your own expenses | `expenses:submit` | no |
-| `hr:approvals` | Approve or reject your team's expenses | `expenses:approve` | yes |
-| `hr:salaries` | See and change employee salaries | `salaries:read`, `salaries:write` | yes |
+| Scope | Description | Optional |
+| --- | --- | --- |
+| `hr:profile` | See your own profile and pay | no |
+| `hr:expenses` | See and submit your own expenses | no |
+| `hr:approvals` | Approve or reject your team's expenses | yes |
+| `hr:salaries` | See and change employee salaries | yes |
 
-Talking point: the scopes are about what the AI client is allowed to do. The roles are about what the person is allowed to do. The MCP server only allows an action when both say yes.
+Use MCP Server Scopes here, not the role or permission scope mapping you'd use on an API Resource. Clients that register themselves (DCR) can only request MCP Server Scopes. A permission-mapped scope fails at login with `Received invalid scope. valid=[], invalid=[hr:...]`.
+
+The MCP server maps each scope to the role permissions it unlocks (in `src/lib/mcp/descope-auth.ts`):
+
+| Scope | Unlocks permissions |
+| --- | --- |
+| `hr:profile` | `profile:read` |
+| `hr:expenses` | `expenses:submit` |
+| `hr:approvals` | `expenses:approve` |
+| `hr:salaries` | `salaries:read`, `salaries:write` |
+
+Talking point: the scopes are what the user lets the AI client do, and the user ticks them on the consent screen. The role is what the person is allowed to do, and it comes from Descope in the token. The MCP server only allows an action when both say yes. So even if Emma grants `hr:salaries`, she still can't see salaries, because her role doesn't have `salaries:read`.
 
 ### 3.3 Access
 
