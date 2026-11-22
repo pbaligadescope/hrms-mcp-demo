@@ -3,8 +3,8 @@
 A demo of a web portal that gains MCP access, in three stages:
 
 1. **Stage 1:** an HR and expenses portal with Descope login (magic link). No MCP.
-2. **Stage 2:** the same portal plus an MCP server with **no auth** at `/api/mcp-insecure`, to show the problem.
-3. **Stage 3 (next):** the MCP server secured with Descope OAuth, so each persona gets the right data or a denial.
+2. **Stage 2:** the same portal plus an MCP server with **no auth** at `/api/mcp`, to show the problem.
+3. **Stage 3 (next):** the same `/api/mcp` URL secured with Descope OAuth, so each persona gets the right data or a denial.
 
 Claude is the MCP client in stages 2 and 3.
 
@@ -48,7 +48,7 @@ To put the demo data back to its starting state, stop the server and run `npm ru
 - `src/middleware.ts` blocks `/dashboard` without a valid Descope session.
 - `src/lib/auth.ts` validates the session on the server and reads `roles` and `permissions` from the Descope JWT.
 - `src/app/dashboard/actions.ts` checks the permission again on the server for every change.
-- `src/app/api/mcp-insecure/route.ts` is the Stage 2 MCP server: no auth, every tool open to anyone.
+- `src/app/api/mcp/route.ts` is the MCP server. `DEMO_STAGE` decides whether it is off (1), released without auth (2) or secured with Descope (3).
 - `src/lib/mcp/tools.ts` holds the MCP tools. They take a `Caller`, which is `anonymous` in Stage 2 and a verified Descope user in Stage 3.
 - `src/lib/db.ts` keeps the data in `data/db.json`, so the portal and the MCP servers (stages 2 and 3) share it.
 - The activity log on the dashboard records who did what and through which channel (portal or MCP).

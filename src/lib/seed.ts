@@ -28,7 +28,7 @@ export type Expense = {
 export type AuditEntry = {
   at: string;
   actor: string; // who did it, or "anonymous"
-  channel: "portal" | "mcp-insecure" | "mcp-secure";
+  channel: "portal" | "mcp";
   action: string;
 };
 

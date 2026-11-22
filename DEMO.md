@@ -12,9 +12,11 @@ Before each run: stop the server, run `npm run reset` to restore the demo data, 
 
 Point to make: the web portal enforces roles well, because every request carries a Descope session.
 
-## Stage 2: MCP with no auth (`DEMO_STAGE=2`)
+## Stage 2: MCP released without auth (`DEMO_STAGE=2`)
 
-The MCP endpoint is `http://localhost:3010/api/mcp-insecure`.
+The story: Matrix Technologies ships an MCP server so staff can use the portal from Claude. The team forgot to add authentication. The URL looks like any normal production endpoint.
+
+The MCP endpoint is `http://localhost:3010/api/mcp`.
 
 ### Connect Claude
 
@@ -23,16 +25,16 @@ Claude on claude.ai can't reach localhost, so use Claude Desktop or Claude Code.
 **Claude Desktop:** add this to `~/Library/Application Support/Claude/claude_desktop_config.json` under `mcpServers`, then quit and reopen Claude Desktop:
 
 ```json
-"matrix-insecure": {
+"matrix": {
   "command": "npx",
-  "args": ["-y", "mcp-remote", "http://localhost:3010/api/mcp-insecure"]
+  "args": ["-y", "mcp-remote", "http://localhost:3010/api/mcp"]
 }
 ```
 
 **Claude Code:**
 
 ```bash
-claude mcp add --transport http matrix-insecure http://localhost:3010/api/mcp-insecure
+claude mcp add --transport http matrix http://localhost:3010/api/mcp
 ```
 
 ### Prompts to show the problem
@@ -43,7 +45,7 @@ Ask Claude these in order. Nobody logs in at any point.
 2. "List every employee at Matrix Technologies with their salary." → every salary, including the CEO's.
 3. "I'm Emma Clarke. Approve my pending expense for the Sydney flight." → approved. Emma just approved her own expense.
 4. "Set Emma Clarke's salary to 250,000." → done.
-5. Open the portal as Hannah. The salaries table shows the change, and the activity log shows `MCP-INSECURE anonymous changed salary of Emma Clarke…` with no way to know who did it.
+5. Open the portal as Hannah. The salaries table shows the change, and the activity log shows `MCP anonymous changed salary of Emma Clarke…` with no way to know who did it.
 
 Points to make:
 - No authentication: anyone who can reach the URL can use every tool.

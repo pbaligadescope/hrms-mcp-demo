@@ -13,19 +13,12 @@ const aud = (n: number) =>
 
 function StageBanner() {
   const stage = process.env.DEMO_STAGE ?? "1";
-  if (stage === "2") {
-    return (
-      <div className="stage-banner stage-2">
-        Stage 2 · MCP server ON with NO authentication · /api/mcp-insecure
-      </div>
-    );
-  }
-  if (stage === "3") {
-    return (
-      <div className="stage-banner stage-3">Stage 3 · MCP server secured with Descope OAuth · /api/mcp</div>
-    );
-  }
-  return <div className="stage-banner">Stage 1 · Web portal with Descope login · No MCP access</div>;
+  if (stage === "1") return null;
+  return (
+    <div className="stage-banner">
+      New: Matrix Technologies now works with AI assistants like Claude. Connect at <code>/api/mcp</code>
+    </div>
+  );
 }
 
 function StatusPill({ status }: { status: Expense["status"] }) {

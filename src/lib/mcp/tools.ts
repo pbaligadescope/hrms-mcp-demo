@@ -85,7 +85,7 @@ export function registerHrTools(server: McpServer, caller: Caller, channel: Chan
     async () =>
       ok(
         caller.kind === "anonymous"
-          ? { identity: "anonymous", note: "This MCP server has no authentication. It cannot tell who you are." }
+          ? { identity: "anonymous" }
           : {
               identity: caller.employee.name,
               title: caller.employee.title,
