@@ -66,7 +66,7 @@ The story: the team adds Descope in front of the same `/api/mcp` URL. Claude's c
 ### Run it
 
 1. Claude Desktop connects to `matrix`. The server answers 401, so `mcp-remote` opens a Descope login page in your browser.
-2. Sign in as **Emma** with a magic link. Approve the scopes on the consent screen.
+2. Sign in as **Emma**: enter her email, type the 6-digit code from Gmail, then approve the scopes on the consent screen.
 3. Ask the same prompts as stage 2:
    - "Who does the Matrix Technologies server think I am?" → Emma Clarke, with her permissions and scopes.
    - "List every employee with their salary." → names and titles only, no salaries or emails.

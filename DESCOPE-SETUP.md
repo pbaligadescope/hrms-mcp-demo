@@ -98,16 +98,19 @@ These could be changed to **Allow via policy** later, to restrict which users or
 
 ### 3.4 Client registration and login
 
-In the MCP Server's **Client Registration** / **Settings** section:
+In the MCP Server's **Settings** (client registration) section:
 
 - **Issuer:** per MCP server (`mcpServer`). Each MCP server gets its own issuer and discovery URL.
 - **Dynamic Client Registration (DCR): On.** Claude registers itself the first time it connects, so nobody pastes a client ID or secret.
-- **User Consent Flow:** `sign-up-or-in`. This is the same magic link login the portal uses.
-- **Login page URL:** `https://api.descope.com/login/P3MSmEHghEmtezkjowOSa5RjqRW3` (the Descope-hosted login page).
+- **Client Registration Flow: leave empty.** This optional field takes a *management* flow that runs after a client registers, for example to vet or tag new clients. A login flow such as `sign-up-or-in` does **not** belong here. If one is set, every registration fails with `403 E102005 "... is not a management flow"`.
+- **User Consent Flow:** `inbound-apps-user-consent`. Descope projects include this flow. It signs the user in with a one-time code by email, then shows the consent screen listing the scopes Claude asked for.
+- **Login page URL:** `https://api.descope.com/login/P3MSmEHghEmtezkjowOSa5RjqRW3?flow=inbound-apps-user-consent` (the Descope-hosted page running that consent flow).
 - **Skip consent screen:** off. The user sees which scopes Claude is asking for.
 - **Always include all user authorization info on the token:** **On**. The token then carries the user's roles and permissions, and the MCP server combines them with the granted scopes.
 
 Save.
+
+Talking point: the portal login uses a magic link (`sign-up-or-in`), and the AI login uses an email code with consent (`inbound-apps-user-consent`). They're different flows, but the same Descope user and the same roles.
 
 ### 3.5 Copy the discovery and issuer URLs
 
