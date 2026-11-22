@@ -11,6 +11,23 @@ export const dynamic = "force-dynamic";
 const aud = (n: number) =>
   n.toLocaleString("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 });
 
+function StageBanner() {
+  const stage = process.env.DEMO_STAGE ?? "1";
+  if (stage === "2") {
+    return (
+      <div className="stage-banner stage-2">
+        Stage 2 · MCP server ON with NO authentication · /api/mcp-insecure
+      </div>
+    );
+  }
+  if (stage === "3") {
+    return (
+      <div className="stage-banner stage-3">Stage 3 · MCP server secured with Descope OAuth · /api/mcp</div>
+    );
+  }
+  return <div className="stage-banner">Stage 1 · Web portal with Descope login · No MCP access</div>;
+}
+
 function StatusPill({ status }: { status: Expense["status"] }) {
   return <span className={`pill pill-${status}`}>{status}</span>;
 }
@@ -64,7 +81,7 @@ export default async function Dashboard() {
         </div>
       </header>
 
-      <div className="stage-banner">Stage 1 · Web portal with Descope login · No MCP access</div>
+      <StageBanner />
 
       <div className="grid">
         {can(user, "profile:read") && (

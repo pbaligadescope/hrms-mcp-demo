@@ -57,6 +57,8 @@ code { font-size: 12px; background: #f1f5f9; border-radius: 4px; padding: 2px 6p
   background: #ecfeff; border: 1px solid #a5f3fc; color: #155e75; border-radius: 10px;
   padding: 8px 14px; font-size: 13px; font-weight: 600; margin-bottom: 18px;
 }
+.stage-2 { background: var(--rejected-bg); border-color: #fca5a5; color: var(--rejected); }
+.stage-3 { background: var(--approved-bg); border-color: #6ee7b7; color: var(--approved); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
 .card-wide { grid-column: 1 / -1; }
