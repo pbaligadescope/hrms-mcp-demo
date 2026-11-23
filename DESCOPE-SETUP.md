@@ -123,6 +123,32 @@ Save.
 
 Talking point: the portal login uses a magic link (`sign-up-or-in`), and the AI login uses an email code with consent (`inbound-apps-user-consent`). They're different flows, but the same Descope user and the same roles.
 
+### 3.4b Access policies: only offer scopes the user's role allows
+
+Without policies, the consent screen offers every scope to everyone. Emma (Employee) would see "See and change employee salaries", even though the server would refuse her anyway. Policies make Descope trim the consent screen *before* it renders, so each persona only sees and can grant what their role allows.
+
+**Access Policy** page (https://app.descope.com/policies). Create 3 rules, each with **+ Rule** and **Allow**:
+
+| Rule name | Subjects | Targets (resource → scopes) | Grant type |
+| --- | --- | --- | --- |
+| Matrix HR - Employees | Users, custom condition `user.roles` **contains** `Employee` | Matrix Technologies HR → `hr:profile`, `hr:expenses` | Authorization code |
+| Matrix HR - Managers | Users, custom condition `user.roles` **contains** `Manager` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals` | Authorization code |
+| Matrix HR - HR Admins | Users, custom condition `user.roles` **contains** `HR Admin` | Matrix Technologies HR → all 4 scopes | Authorization code |
+
+For each rule:
+1. **Subjects:** choose users, then add a **custom condition**: key `user.roles`, operator **Contains**, value the role name.
+2. **Targets:** choose **Specified**, pick the **Matrix Technologies HR** resource, and tick only that rule's scopes.
+3. **Grant types:** Authorization code. This is the user login Claude uses.
+4. Save, and make sure the rule is **enabled**.
+
+Then switch the MCP server to policy mode: **Resources → Matrix Technologies HR → User access → Allow via policy**. Save.
+
+Descope evaluates rules top to bottom and applies the first enabled rule that matches. Each persona has one role, so the order of these 3 doesn't matter. A user who matches no rule (no Matrix role) is refused at login.
+
+Talking point: this is defense in depth. Descope decides what the AI can even ask for, and the MCP server still checks the role on every call.
+
+**Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma. The consent screen should list only "See your own profile and pay" and "See and submit your own expenses".
+
 ### 3.5 Copy the discovery and issuer URLs
 
 The MCP Server page shows its **Discovery URL** under **Usage samples**:
