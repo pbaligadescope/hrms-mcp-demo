@@ -16,6 +16,8 @@ Claude is the MCP client in stages 2 and 3.
 | Mark Davies | Manager | [EMAIL_MARK] | Everything Emma can, plus approve his team's expenses and see his direct reports' salaries |
 | Hannah Lee | HR Admin | [EMAIL_HANNAH] | Everything, including viewing and changing all salaries |
 
+The `[EMAIL_…]` placeholders stand for the real login inboxes, set in `.env.local` (see `.env.example`).
+
 Roles and permissions live in the Descope project **[DESCOPE_PROJECT]**:
 
 | Permission | Employee | Manager | HR Admin |

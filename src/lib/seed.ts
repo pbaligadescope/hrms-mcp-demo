@@ -44,7 +44,7 @@ export function seedData(): Db {
       {
         id: "e1",
         name: "Emma Clarke",
-        email: "[EMAIL_EMMA]",
+        email: process.env.EMAIL_EMMA || "emma.clarke@matrix.example",
         title: "Software Engineer",
         department: "Engineering",
         managerId: "e2",
@@ -54,7 +54,7 @@ export function seedData(): Db {
       {
         id: "e2",
         name: "Mark Davies",
-        email: "[EMAIL_MARK]",
+        email: process.env.EMAIL_MARK || "mark.davies@matrix.example",
         title: "Engineering Manager",
         department: "Engineering",
         managerId: "e7",
@@ -64,7 +64,7 @@ export function seedData(): Db {
       {
         id: "e3",
         name: "Hannah Lee",
-        email: "[EMAIL_HANNAH]",
+        email: process.env.EMAIL_HANNAH || "hannah.lee@matrix.example",
         title: "HR Director",
         department: "People",
         managerId: "e7",
