@@ -142,7 +142,9 @@ For each rule (**Access Policy → + Rule**):
 
 The list already contains a **Default rule** ("Blocks any request", Block). Leave it as the **last** rule. New rules are added above it, so anyone who isn't an Employee, Manager or HR Admin gets nothing.
 
-Then switch the MCP server's **User access** from **Allow** to **Allow via policy**. (Not yet confirmed whether this is required. Descope's policy docs suggest the rules filter consent scopes without it. Being tested in this project; update this note with the result.)
+Then switch the MCP server's **User access** from **Allow** to **Allow via policy**. (Not yet confirmed whether this is required. Descope's policy docs suggest the rules filter consent scopes without it.)
+
+**What we observed (2026-11-23):** with the rules in place, Emma's consent screen *still listed all 4 scopes* with the optional ones ticked, but after she clicked Authorize her token carried only `hr:profile` and `hr:expenses` (the `whoami` tool shows the token's scopes). So Descope enforces the policy when it issues the token, even though this consent screen doesn't hide the extra scopes. Show it that way on stage: "Emma ticked salaries, and Descope still didn't put it in her token." Worth asking Descope why the screen itself is not filtered.
 
 The Resources page for an MCP server currently has no User access toggle (it shows details, scopes, client registration, consent flow, connection info and session management). In this project it was set through the Descope Management API: `POST /v1/mgmt/resource/update` with the full resource and `"userAccess": "allowViaPolicy"` (the same call the Descope MCP tools make as `UpdateResource`). If your console version shows a **User access** setting on the MCP Server page or under **Agentic Identity Hub → MCP Servers**, pick **Allow via policy** there instead. To show it live, open the resource and point out that the access rules now apply to it, or show the API call.
 
@@ -152,7 +154,7 @@ Descope evaluates rules top to bottom and applies the first enabled rule that ma
 
 Talking point: this is defense in depth. Descope decides what the AI can even ask for, and the MCP server still checks the role on every call.
 
-**Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma. The consent screen should list only "See your own profile and pay" and "See and submit your own expenses".
+**Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma, then ask Claude to run the matrix `whoami` tool. Its `scopes` should be only `hr:profile` and `hr:expenses`, even if the consent screen showed all 4.
 
 ### 3.5 Copy the discovery and issuer URLs
 
