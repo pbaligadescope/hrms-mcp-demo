@@ -156,6 +156,34 @@ Talking point: this is defense in depth. Descope decides what the AI can even as
 
 **Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma, then ask Claude to run the matrix `whoami` tool. Its `scopes` should be only `hr:profile` and `hr:expenses`, even if the consent screen showed all 4.
 
+### 3.4c Role-aware consent screen (custom flow "Matrix HR consent")
+
+The standard consent screen (3.4b) still lists all 4 scopes for this MCP server, even though the policy trims the token. To make each persona *see* only what their role allows, use a copy of the consent flow that branches on role. Descope's own `inbound-apps-user-consent` flow is left untouched.
+
+**Flows → Inbound apps - user consent → ⋯ → Duplicate.** Name it `Matrix HR consent` (flow ID `matrix-hr-consent`). In the copy:
+
+1. **Replace the "Is inbound app verified?" condition** (after "Is consent already granted?" → False) with a new **Condition** named `Which Matrix role?`, with 3 branches plus Else:
+   - `Employee`: **user.roles** · **Contains** · `Employee`
+   - `Manager`: **user.roles** · **Contains** · `Manager`
+   - `HR Admin`: **user.roles** · **Contains** · `HR Admin`
+   - **Else** → End (a user with no Matrix role gets nothing).
+2. **Make 3 consent screens**, one per branch: `Consent Screen - Employee`, `- Manager`, `- HR Admin`. Start from the existing consent screen, delete the **Inbound App Scopes** component, and put a **Text** component in its place listing that role's scopes:
+   - Employee: ✓ See your own profile and pay, ✓ See and submit your own expenses
+   - Manager: the 2 above, plus ✓ Approve or reject your team's expenses
+   - HR Admin: all 4, plus ✓ See and change employee salaries
+   Keep the logo, the "Connect … with …" title, and the **Authorize** and **Cancel** buttons. Wire **Authorize → Update user consent** and **Cancel → End**.
+3. Delete the two old consent screens (Verified App / Unverified App).
+4. Open the **Update user consent** action and turn on **Scopes auto approval**. The screen no longer has checkboxes, so the action approves what the client requested, and the access policy (3.4b) trims the token to what the role allows.
+5. **Save** (publish).
+
+Then point the MCP server at it: **Agentic Identity Hub → MCP Servers → Matrix Technologies HR → Settings → User Consent Flow:** `Matrix HR consent`. The login page URL becomes `https://api.descope.com/login/P3MSmEHghEmtezkjowOSa5RjqRW3?flow=matrix-hr-consent`. Save.
+
+To undo, set User Consent Flow back to `inbound-apps-user-consent`.
+
+Talking point: the screen is a promise to the user, and the policy is the enforcement. Both now say the same thing: Emma is offered 2 scopes, and her token carries 2.
+
+**Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma. The consent screen lists 2 items, and `whoami` shows the same 2 scopes.
+
 ### 3.5 Copy the discovery and issuer URLs
 
 The MCP Server page shows its **Discovery URL** under **Usage samples**:
