@@ -16,6 +16,16 @@ Matrix Technologies, an HR and expenses portal, in three stages:
 | Mark Davies | Manager (Emma and Raj report to him) | `[EMAIL_MARK]` |
 | Hannah Lee | HR Admin | `[EMAIL_HANNAH]` |
 
+Copy and paste them:
+
+```
+[EMAIL_EMMA]
+[EMAIL_MARK]
+[EMAIL_HANNAH]
+```
+
+Hannah's address ends in "hann**ah**". A typo such as `+hanna` signs up a new user with no role, who gets nothing.
+
 ---
 
 ## Before you go on stage (once)
