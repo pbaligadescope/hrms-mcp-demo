@@ -142,7 +142,7 @@ For each rule (**Access Policy → + Rule**):
 
 The list already contains a **Default rule** ("Blocks any request", Block). Leave it as the **last** rule. New rules are added above it, so anyone who isn't an Employee, Manager or HR Admin gets nothing.
 
-Then switch the MCP server's **User access** from **Allow** to **Allow via policy**. Until you do, Descope ignores the rules for this server and offers every scope to everyone.
+Then switch the MCP server's **User access** from **Allow** to **Allow via policy**. (Not yet confirmed whether this is required. Descope's policy docs suggest the rules filter consent scopes without it. Being tested in this project; update this note with the result.)
 
 The Resources page for an MCP server currently has no User access toggle (it shows details, scopes, client registration, consent flow, connection info and session management). In this project it was set through the Descope Management API: `POST /v1/mgmt/resource/update` with the full resource and `"userAccess": "allowViaPolicy"` (the same call the Descope MCP tools make as `UpdateResource`). If your console version shows a **User access** setting on the MCP Server page or under **Agentic Identity Hub → MCP Servers**, pick **Allow via policy** there instead. To show it live, open the resource and point out that the access rules now apply to it, or show the API call.
 
