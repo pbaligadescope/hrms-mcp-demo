@@ -1,28 +1,32 @@
 # Demo run sheet
 
-The portal runs at http://localhost:3010. Switch stages by setting `DEMO_STAGE` in `.env.local` and restarting `npm run dev`.
+Matrix Technologies, an HR and expenses portal, in three stages:
 
-Before each run: stop the server, run `npm run reset` to restore the demo data, then start it again.
+1. The portal with Descope login
+2. The same portal ships an MCP server with no auth
+3. The same MCP URL secured with Descope
 
-## Stage 1: portal only (`DEMO_STAGE=1`)
+- Portal: http://localhost:3010
+- MCP endpoint (same in every stage): `http://localhost:3010/api/mcp`
+- Folder: `[PROJECT_FOLDER]`
 
-1. Sign in as Emma (`[EMAIL_EMMA]`). She sees her profile, her pay and her expenses. No salaries table.
-2. Sign out, sign in as Mark. He also sees Team approvals for Emma and Raj.
-3. Sign out, sign in as Hannah. She sees and can edit every salary.
+| Persona | Role | Login email |
+| --- | --- | --- |
+| Emma Clarke | Employee | `[EMAIL_EMMA]` |
+| Mark Davies | Manager (Emma and Raj report to him) | `[EMAIL_MARK]` |
+| Hannah Lee | HR Admin | `[EMAIL_HANNAH]` |
 
-Point to make: the web portal enforces roles well, because every request carries a Descope session.
+---
 
-## Stage 2: MCP released without auth (`DEMO_STAGE=2`)
+## Before you go on stage (once)
 
-The story: Matrix Technologies ships an MCP server so staff can use the portal from Claude. The team forgot to add authentication. The URL looks like any normal production endpoint.
+```bash
+cd [PROJECT_FOLDER]
+git pull
+npm install
+```
 
-The MCP endpoint is `http://localhost:3010/api/mcp`.
-
-### Connect Claude
-
-Claude on claude.ai can't reach localhost, so use Claude Desktop or Claude Code.
-
-**Claude Desktop:** add this to `~/Library/Application Support/Claude/claude_desktop_config.json` under `mcpServers`, then quit and reopen Claude Desktop:
+**Claude Desktop config.** In `~/Library/Application Support/Claude/claude_desktop_config.json`, under `mcpServers`, add this (it stays the same for all stages):
 
 ```json
 "matrix": {
@@ -31,63 +35,147 @@ Claude on claude.ai can't reach localhost, so use Claude Desktop or Claude Code.
 }
 ```
 
-**Claude Code:**
+**Browser tabs to have open:**
+- Gmail (for the magic links and codes)
+- http://localhost:3010
+- Descope console, project **[DESCOPE_PROJECT]**: Roles, Users, Agentic Identity Hub → MCP Servers → Matrix Technologies HR, Access Policy, Flows → Matrix HR consent, Audit
+
+## Commands
+
+| What | Command |
+| --- | --- |
+| Start stage N | `DEMO_STAGE=N npm run dev` (stop with Ctrl+C) |
+| Reset demo data | stop the server, then `npm run reset` |
+| Forget Claude's MCP login (switch persona, or go from stage 2 to 3) | quit Claude Desktop (Cmd+Q), then `rm -rf ~/.mcp-auth`, then reopen it |
+
+`DEMO_STAGE` set inline overrides `.env.local`, so you never need to edit the file. Leave ports 3000 to 3003 alone, because the other demos run there.
+
+---
+
+## Stage 1: the portal, with Descope login
 
 ```bash
-claude mcp add --transport http matrix http://localhost:3010/api/mcp
+npm run reset && DEMO_STAGE=1 npm run dev
 ```
 
-### Prompts to show the problem
+Claude Desktop's matrix server won't connect in this stage (the endpoint doesn't exist yet). That's expected, so ignore it.
 
-Ask Claude these in order. Nobody logs in at any point.
+**Show in Descope:** Authorization → Roles (Employee, Manager, HR Admin and their permissions), Users (the 3 personas), Flows → Sign Up or In.
 
-1. "Who does the Matrix Technologies server think I am?" → `anonymous`. The server has no idea who is calling.
-2. "List every employee at Matrix Technologies with their salary." → every salary, including the CEO's.
-3. "I'm Emma Clarke. Approve my pending expense for the Sydney flight." → approved. Emma just approved her own expense.
-4. "Set Emma Clarke's salary to 250,000." → done.
-5. Open the portal as Hannah. The salaries table shows the change, and the activity log shows `MCP anonymous changed salary of Emma Clarke…` with no way to know who did it.
+**Run it** (sign out between personas):
 
-Points to make:
-- No authentication: anyone who can reach the URL can use every tool.
-- No authorization: the server can't check roles, because it doesn't know the caller.
-- No accountability: the audit trail says "anonymous".
-- The portal's careful role checks don't help, because the MCP server bypasses them.
+| Persona | What they see |
+| --- | --- |
+| Emma | Her profile, pay and expenses. No salaries. |
+| Mark | Also Team approvals (Emma and Raj) and a read-only **Team salaries** card. |
+| Hannah | Everything, including an editable salary table for everyone. |
 
-## Stage 3: same URL, secured with Descope (`DEMO_STAGE=3`)
+**Point to make:** the portal enforces roles, because every request carries a Descope session with the user's roles and permissions.
 
-The story: the team adds Descope in front of the same `/api/mcp` URL. Claude's config doesn't change.
+---
 
-### Before the demo
+## Stage 2: "we shipped MCP" (no auth)
 
-- Do the Descope steps in [DESCOPE-SETUP.md](DESCOPE-SETUP.md) section 3, or walk through them live.
-- Set `DEMO_STAGE=3`, run `npm run reset`, and restart `npm run dev`.
-- Quit and reopen Claude Desktop so `mcp-remote` reconnects.
+```bash
+# Ctrl+C the server, then:
+npm run reset && DEMO_STAGE=2 npm run dev
+```
 
-### Run it
+Quit and reopen Claude Desktop. Optionally show the dashboard banner: "Matrix Technologies now works with AI assistants like Claude".
 
-1. Claude Desktop connects to `matrix`. The server answers 401, so `mcp-remote` opens a Descope login page in your browser.
-2. Sign in as **Emma**: enter her email, type the 6-digit code from Gmail, then approve the scopes on the consent screen.
-3. Ask the same prompts as stage 2:
-   - "Who does the Matrix Technologies server think I am?" → Emma Clarke, with her permissions and scopes.
-   - "List every employee with their salary." → names and titles only, no salaries or emails.
-   - "What is the CEO Olivia Chen paid?" → **ACCESS DENIED**: Emma lacks `salaries:read`.
-   - "Approve my pending Sydney flight expense." → **ACCESS DENIED**: she can't approve, and certainly not her own claim.
-   - "Set Emma Clarke's salary to 250,000." → **ACCESS DENIED**.
-   - "Submit a $45 expense for a taxi." → works, filed for Emma, whatever name the prompt uses.
-4. Switch to **Mark**. To log in as a different persona, quit Claude Desktop, delete `~/.mcp-auth` (mcp-remote's saved tokens), then reopen.
-   - "Show pending expenses." → only Emma's and Raj's, his direct reports.
-   - "Approve Raj Patel's conference ticket." → approved by Mark Davies.
-   - "Approve my own laptop stand expense." → **DENIED**: you can't approve your own expense.
-   - "Approve Sofia Martinez's client dinner." → **DENIED**: not his direct report.
-   - "What do Emma Clarke and Raj Patel earn?" → both salaries, because they report to him.
-   - "What does Sofia Martinez earn?" → **DENIED**: not his direct report.
-   - "Set Raj Patel's salary to 200,000." → **DENIED**: managers can only read their team's pay.
-5. Switch to **Hannah**. She sees all salaries and can change them, and every change is logged under her name.
-6. Open the portal as Hannah. The activity log now shows real names on every MCP action, including the denied attempts.
+**Show in Descope:** nothing. That's the point: there's no identity provider in front of the MCP server.
 
-Points to make:
-- **Authentication:** every MCP call is tied to a real person through the same Descope login as the portal.
-- **Authorization:** the role from Descope plus the scopes the user consented to decide each tool call.
-- **Least privilege for the AI:** the token only works for this MCP server (audience), and only for the scopes granted.
-- **Accountability:** the audit trail has names, not "anonymous".
-- **No client secrets:** Claude registered itself through DCR.
+**Prompts** (nobody logs in):
+
+| Prompt | Result |
+| --- | --- |
+| Who does the Matrix Technologies server think I am? | `anonymous` |
+| List every employee at Matrix Technologies with their salary. | Every salary, including the CEO's $320,000 |
+| I'm Emma Clarke. Approve my pending expense for the Sydney flight. | Approved. She approved her own expense. |
+| Set Emma Clarke's salary to 250,000. | Done |
+
+Then sign in to the portal as **Hannah**. The salary table shows 250,000, and the activity log says **"MCP anonymous changed salary of Emma Clarke…"**.
+
+**Points to make:** no authentication, no authorization, no accountability. The portal's role checks don't help, because the MCP server bypasses them.
+
+---
+
+## Stage 3: same URL, secured with Descope
+
+```bash
+# Ctrl+C the server, then:
+npm run reset && DEMO_STAGE=3 npm run dev
+```
+
+Quit Claude Desktop, then `rm -rf ~/.mcp-auth`, then reopen it.
+
+**Show in Descope first** (Agentic Identity Hub → MCP Servers → Matrix Technologies HR):
+- The **MCP Server URL** `http://localhost:3010/api/mcp` is the token audience, so a portal token is useless here.
+- **MCP Server Scopes:** hr:profile, hr:expenses, hr:approvals, hr:team-salaries, hr:salaries.
+- **DCR on:** Claude registers itself, with no client ID or secret to paste.
+- **User Consent Flow:** Matrix HR consent.
+
+Then **Access Policy:** one rule per role. Each rule allows only that role's scopes, and the default rule blocks everyone else.
+
+### Emma (Employee)
+
+Claude opens a Descope page. Enter Emma's email and the 6-digit code from Gmail. **Her consent screen lists 2 items.** Click Authorize.
+
+| Prompt | Result |
+| --- | --- |
+| Who does the Matrix Technologies server think I am? | Emma Clarke, 2 scopes |
+| List every employee with their salary. | Names and titles only |
+| What is the CEO Olivia Chen paid? | **ACCESS DENIED** (no salaries:read) |
+| Approve my pending Sydney flight expense. | **ACCESS DENIED** |
+| Set Emma Clarke's salary to 250,000. | **ACCESS DENIED** |
+| Submit a $45 expense for a taxi. | Filed for Emma |
+
+### Mark (Manager)
+
+Quit Claude Desktop, then `rm -rf ~/.mcp-auth`, then reopen it and sign in as Mark. **His consent screen lists 4 items**, including "See your direct reports' salaries".
+
+| Prompt | Result |
+| --- | --- |
+| Show pending expenses. | Only Emma's and Raj's |
+| Approve Raj Patel's conference ticket. | Approved by Mark Davies |
+| Approve my own laptop stand expense. | **DENIED**: it's his own |
+| Approve Sofia Martinez's client dinner. | **DENIED**: not his report |
+| What do Emma Clarke and Raj Patel earn? | Both salaries |
+| What does Sofia Martinez earn? | **DENIED**: not his report |
+| Set Raj Patel's salary to 200,000. | **DENIED**: read only |
+
+Talking point: Descope says *what kind* of access Mark has (team salaries). The app decides *whose* records that covers, because only the app knows the org chart.
+
+### Hannah (HR Admin)
+
+Quit Claude Desktop, then `rm -rf ~/.mcp-auth`, then reopen it and sign in as Hannah. Her consent screen lists 4 items, including "See and change employee salaries".
+
+| Prompt | Result |
+| --- | --- |
+| List every employee with their salary. | Everyone, with salaries |
+| Set Emma Clarke's salary to 140,000. | Done, logged under Hannah Lee |
+
+### Close the loop
+
+- **Portal as Hannah → Activity log:** real names on every MCP action, including the denied attempts.
+- **Descope → MCP Servers → Matrix Technologies HR → Clients:** the client Claude registered itself.
+- **Descope → Audit:** the logins and consents for Emma, Mark and Hannah.
+- **Descope → Users → any persona:** one identity serves both the portal and MCP.
+
+**Points to make:**
+- **Authentication:** every MCP call is tied to a real person, through the same Descope users as the portal.
+- **Least privilege:** the consent screen offers only what the role allows, the policy trims the token, and the server checks again on every call.
+- **Audience-bound tokens:** they only work for this MCP server.
+- **Accountability:** names, not "anonymous".
+- **No secrets:** Claude registered itself through DCR.
+
+---
+
+## If something goes wrong
+
+| Symptom | Fix |
+| --- | --- |
+| Claude logs in as the previous persona | Quit Claude Desktop, then `rm -rf ~/.mcp-auth`, then reopen it |
+| "Authorization failed: Consent not granted" | Check that the user has a Matrix role (Descope → Users) |
+| Old data showing | Stop the server, run `npm run reset`, then start it again |
+| Claude's tools look stale after a restart | Quit and reopen Claude Desktop |
