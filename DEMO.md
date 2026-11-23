@@ -42,19 +42,31 @@ npm install
 
 ## Commands
 
+Start any stage with these three steps (replace `N` with 1, 2 or 3):
+
+```bash
+cd [PROJECT_FOLDER]
+lsof -ti tcp:3010 -sTCP:LISTEN | xargs kill      # free port 3010 (stops any old Matrix server)
+npm run reset && DEMO_STAGE=N npm run dev         # reset data and start stage N
+```
+
+- `DEMO_STAGE=N` must be on the **same line** as `npm run dev`. On a line by itself it does nothing.
+- The `lsof` line only stops whatever is *listening* on 3010. It leaves your browser and the other demos on ports 3000 to 3003 alone. If nothing is running there, it prints a harmless usage message.
+- `DEMO_STAGE` set inline overrides `.env.local`, so you never need to edit the file.
+- You can ignore the "multiple lockfiles" warning at startup.
+
 | What | Command |
 | --- | --- |
-| Start stage N | `DEMO_STAGE=N npm run dev` (stop with Ctrl+C) |
-| Reset demo data | stop the server, then `npm run reset` |
+| Stop the server | Ctrl+C (or the `lsof` line above) |
+| Reset demo data | `npm run reset` (included in the start line) |
 | Forget Claude's MCP login (switch persona, or go from stage 2 to 3) | quit Claude Desktop (Cmd+Q), then `rm -rf ~/.mcp-auth`, then reopen it |
-
-`DEMO_STAGE` set inline overrides `.env.local`, so you never need to edit the file. Leave ports 3000 to 3003 alone, because the other demos run there.
 
 ---
 
 ## Stage 1: the portal, with Descope login
 
 ```bash
+lsof -ti tcp:3010 -sTCP:LISTEN | xargs kill
 npm run reset && DEMO_STAGE=1 npm run dev
 ```
 
@@ -77,7 +89,7 @@ Claude Desktop's matrix server won't connect in this stage (the endpoint doesn't
 ## Stage 2: "we shipped MCP" (no auth)
 
 ```bash
-# Ctrl+C the server, then:
+lsof -ti tcp:3010 -sTCP:LISTEN | xargs kill
 npm run reset && DEMO_STAGE=2 npm run dev
 ```
 
@@ -103,7 +115,7 @@ Then sign in to the portal as **Hannah**. The salary table shows 250,000, and th
 ## Stage 3: same URL, secured with Descope
 
 ```bash
-# Ctrl+C the server, then:
+lsof -ti tcp:3010 -sTCP:LISTEN | xargs kill
 npm run reset && DEMO_STAGE=3 npm run dev
 ```
 
