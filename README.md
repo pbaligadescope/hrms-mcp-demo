@@ -13,7 +13,7 @@ Claude is the MCP client in stages 2 and 3.
 | Persona | Role | Email | Can do |
 | --- | --- | --- | --- |
 | Emma Clarke | Employee | [EMAIL_EMMA] | See own profile and pay, submit expenses |
-| Mark Davies | Manager | [EMAIL_MARK] | Everything Emma can, plus approve his team's expenses |
+| Mark Davies | Manager | [EMAIL_MARK] | Everything Emma can, plus approve his team's expenses and see his direct reports' salaries |
 | Hannah Lee | HR Admin | [EMAIL_HANNAH] | Everything, including viewing and changing all salaries |
 
 Roles and permissions live in the Descope project **[DESCOPE_PROJECT]**:
@@ -24,6 +24,7 @@ Roles and permissions live in the Descope project **[DESCOPE_PROJECT]**:
 | `expenses:submit` | ✓ | ✓ | ✓ |
 | `expenses:approve` | | ✓ | ✓ |
 | `salaries:read` | | | ✓ |
+| `salaries:read:team` (direct reports only) | | ✓ | |
 | `salaries:write` | | | ✓ |
 
 ## Run it locally

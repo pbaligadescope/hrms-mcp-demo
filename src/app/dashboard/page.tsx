@@ -163,6 +163,32 @@ export default async function Dashboard() {
           </section>
         )}
 
+        {!can(user, "salaries:read") && can(user, "salaries:read:team") && (
+          <section className="card card-wide">
+            <h2>Team salaries</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Title</th>
+                  <th className="num">Salary (AUD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {db.employees
+                  .filter((e) => e.managerId === me.id)
+                  .map((e) => (
+                    <tr key={e.id}>
+                      <td>{e.name}</td>
+                      <td className="muted">{e.title}</td>
+                      <td className="num">{aud(e.salary)}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
         {can(user, "salaries:read") && (
           <section className="card card-wide">
             <h2>Salaries</h2>

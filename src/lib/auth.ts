@@ -7,6 +7,7 @@ export type Permission =
   | "expenses:submit"
   | "expenses:approve"
   | "salaries:read"
+  | "salaries:read:team"
   | "salaries:write";
 
 export type CurrentUser = {

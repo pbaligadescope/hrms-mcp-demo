@@ -45,6 +45,15 @@ function hasPermission(caller: Caller, permission: Permission) {
   return caller.kind === "anonymous" || caller.permissions.includes(permission);
 }
 
+/** True when the caller is this employee's manager and holds "salaries:read:team" (read only, direct reports only). */
+function isDirectReportWithTeamSalaries(caller: Caller, emp: Employee) {
+  return (
+    caller.kind === "user" &&
+    caller.permissions.includes("salaries:read:team") &&
+    emp.managerId === caller.employee.id
+  );
+}
+
 async function log(channel: Channel, caller: Caller, action: string) {
   const db = await readDb();
   db.audit.push({ at: new Date().toISOString(), actor: actorName(caller), channel, action });
@@ -107,7 +116,13 @@ export function registerHrTools(server: McpServer, caller: Caller, channel: Chan
       const db = await readDb();
       const full = hasPermission(caller, "salaries:read");
       return ok(
-        db.employees.map((e) => (full ? { ...publicProfile(e), email: e.email, salary: aud(e.salary) } : publicProfile(e))),
+        db.employees.map((e) =>
+          full
+            ? { ...publicProfile(e), email: e.email, salary: aud(e.salary) }
+            : isDirectReportWithTeamSalaries(caller, e)
+              ? { ...publicProfile(e), salary: aud(e.salary) }
+              : publicProfile(e),
+        ),
       );
     }),
   );
@@ -116,7 +131,7 @@ export function registerHrTools(server: McpServer, caller: Caller, channel: Chan
     "get_salary",
     {
       title: "Get salary",
-      description: "Returns an employee's annual salary in AUD.",
+      description: "Returns an employee's annual salary in AUD. HR can see everyone; managers can see their direct reports.",
       inputSchema: { employee_id: z.string().describe("Employee ID, for example e1") },
     },
     guarded(channel, caller, "get_salary", async ({ employee_id }: { employee_id: string }) => {
@@ -124,7 +139,10 @@ export function registerHrTools(server: McpServer, caller: Caller, channel: Chan
       const emp = db.employees.find((e) => e.id === employee_id);
       if (!emp) return ok(`No employee with id ${employee_id}.`);
       const isSelf = caller.kind === "user" && caller.employee.id === emp.id;
-      requirePermission(caller, isSelf ? "profile:read" : "salaries:read");
+      // Managers may read (never change) their own direct reports' salaries; HR may read everyone's.
+      if (!isDirectReportWithTeamSalaries(caller, emp)) {
+        requirePermission(caller, isSelf ? "profile:read" : "salaries:read");
+      }
       await log(channel, caller, `read the salary of ${emp.name}`);
       return ok({ employee: emp.name, salary: aud(emp.salary) });
     }),

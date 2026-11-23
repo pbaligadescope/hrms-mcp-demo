@@ -79,6 +79,9 @@ The story: the team adds Descope in front of the same `/api/mcp` URL. Claude's c
    - "Approve Raj Patel's conference ticket." → approved by Mark Davies.
    - "Approve my own laptop stand expense." → **DENIED**: you can't approve your own expense.
    - "Approve Sofia Martinez's client dinner." → **DENIED**: not his direct report.
+   - "What do Emma Clarke and Raj Patel earn?" → both salaries, because they report to him.
+   - "What does Sofia Martinez earn?" → **DENIED**: not his direct report.
+   - "Set Raj Patel's salary to 200,000." → **DENIED**: managers can only read their team's pay.
 5. Switch to **Hannah**. She sees all salaries and can change them, and every change is logged under her name.
 6. Open the portal as Hannah. The activity log now shows real names on every MCP action, including the denied attempts.
 

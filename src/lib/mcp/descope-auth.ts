@@ -23,6 +23,7 @@ export const SCOPE_PERMISSIONS: Record<string, Permission[]> = {
   "hr:profile": ["profile:read"],
   "hr:expenses": ["expenses:submit"],
   "hr:approvals": ["expenses:approve"],
+  "hr:team-salaries": ["salaries:read:team"],
   "hr:salaries": ["salaries:read", "salaries:write"],
 };
 

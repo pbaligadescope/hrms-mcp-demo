@@ -12,7 +12,7 @@ Console menu labels change from time to time. If one looks different, search the
 
 ### 1.1 Permissions
 
-**Authorization → Permissions → + Permission.** Create these 5:
+**Authorization → Permissions → + Permission.** Create these 6:
 
 | Name | Description |
 | --- | --- |
@@ -20,6 +20,7 @@ Console menu labels change from time to time. If one looks different, search the
 | `expenses:submit` | Submit and view own expenses |
 | `expenses:approve` | Approve or reject direct reports' expenses |
 | `salaries:read` | View all employee salaries |
+| `salaries:read:team` | View salaries of your direct reports (read only) |
 | `salaries:write` | Change employee salaries |
 
 ### 1.2 Roles
@@ -29,8 +30,8 @@ Console menu labels change from time to time. If one looks different, search the
 | Role | Permissions |
 | --- | --- |
 | **Employee** | `profile:read`, `expenses:submit` |
-| **Manager** | `profile:read`, `expenses:submit`, `expenses:approve` |
-| **HR Admin** | all 5 |
+| **Manager** | `profile:read`, `expenses:submit`, `expenses:approve`, `salaries:read:team` |
+| **HR Admin** | `profile:read`, `expenses:submit`, `expenses:approve`, `salaries:read`, `salaries:write` |
 
 Talking point: Descope puts the user's roles and permissions in their session token, and the portal reads them from there. The app has no role table of its own.
 
@@ -78,13 +79,14 @@ Optional for the demo: open the flow to show the magic link step.
 
 ### 3.2 MCP Server Scopes
 
-In the MCP Server's **MCP Server Scopes** section, add 4 scopes. Leave **Connection scope mapping** empty, because these tools don't call third-party APIs:
+In the MCP Server's **MCP Server Scopes** section, add 5 scopes. Leave **Connection scope mapping** empty, because these tools don't call third-party APIs:
 
 | Scope | Description | Optional |
 | --- | --- | --- |
 | `hr:profile` | See your own profile and pay | no |
 | `hr:expenses` | See and submit your own expenses | no |
 | `hr:approvals` | Approve or reject your team's expenses | yes |
+| `hr:team-salaries` | See your direct reports' salaries | yes |
 | `hr:salaries` | See and change employee salaries | yes |
 
 Use MCP Server Scopes here, not the role or permission scope mapping you'd use on an API Resource. Clients that register themselves (DCR) can only request MCP Server Scopes. A permission-mapped scope fails at login with `Received invalid scope. valid=[], invalid=[hr:...]`.
@@ -96,6 +98,7 @@ The MCP server maps each scope to the role permissions it unlocks (in `src/lib/m
 | `hr:profile` | `profile:read` |
 | `hr:expenses` | `expenses:submit` |
 | `hr:approvals` | `expenses:approve` |
+| `hr:team-salaries` | `salaries:read:team` (the server also limits it to the caller's direct reports, read only) |
 | `hr:salaries` | `salaries:read`, `salaries:write` |
 
 Talking point: the scopes are what the user lets the AI client do, and the user ticks them on the consent screen. The role is what the person is allowed to do, and it comes from Descope in the token. The MCP server only allows an action when both say yes. So even if Emma grants `hr:salaries`, she still can't see salaries, because her role doesn't have `salaries:read`.
@@ -130,8 +133,8 @@ Without policies, the consent screen offers every scope to everyone. Emma (Emplo
 | Rule name | Subjects | Targets (resource → scopes) | Grant type |
 | --- | --- | --- | --- |
 | Matrix HR - Employees | Custom conditions: roles is one of `Employee` | Matrix Technologies HR → `hr:profile`, `hr:expenses` | User access |
-| Matrix HR - Managers | Custom conditions: roles is one of `Manager` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals` | User access |
-| Matrix HR - HR Admins | Custom conditions: roles is one of `HR Admin` | Matrix Technologies HR → all 4 scopes | User access |
+| Matrix HR - Managers | Custom conditions: roles is one of `Manager` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals`, `hr:team-salaries` | User access |
+| Matrix HR - HR Admins | Custom conditions: roles is one of `HR Admin` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals`, `hr:salaries` | User access |
 
 For each rule (**Access Policy → + Rule**):
 1. **Rule name**, for example `Matrix HR - Employees`.
@@ -169,8 +172,8 @@ The standard consent screen (3.4b) still lists all 4 scopes for this MCP server,
    - **Else** → End (a user with no Matrix role gets nothing).
 2. **Make 3 consent screens**, one per branch: `Consent Screen - Employee`, `- Manager`, `- HR Admin`. Start from the existing consent screen, delete the **Inbound App Scopes** component, and put a **Text** component in its place listing that role's scopes:
    - Employee: ✓ See your own profile and pay, ✓ See and submit your own expenses
-   - Manager: the 2 above, plus ✓ Approve or reject your team's expenses
-   - HR Admin: all 4, plus ✓ See and change employee salaries
+   - Manager: the 2 above, plus ✓ Approve or reject your team's expenses, ✓ See your direct reports' salaries
+   - HR Admin: Employee's 2, ✓ Approve or reject your team's expenses, ✓ See and change employee salaries
    Keep the logo, the "Connect … with …" title, and the **Authorize** and **Cancel** buttons. Wire **Authorize → Update user consent** and **Cancel → End**.
 3. Delete the two old consent screens (Verified App / Unverified App).
 4. Open the **Update user consent** action and turn on **Scopes auto approval**. The screen no longer has checkboxes, so the action approves what the client requested, and the access policy (3.4b) trims the token to what the role allows.
@@ -183,6 +186,20 @@ To undo, set User Consent Flow back to `inbound-apps-user-consent`.
 Talking point: the screen is a promise to the user, and the policy is the enforcement. Both now say the same thing: Emma is offered 2 scopes, and her token carries 2.
 
 **Retest:** quit Claude Desktop, run `rm -rf ~/.mcp-auth`, reopen it, and sign in as Emma. The consent screen lists 2 items, and `whoami` shows the same 2 scopes.
+
+### 3.4d Managers see their team's salaries (read only)
+
+Managers should see what their own direct reports earn, but not everyone's salary and not change anything. This needs one new permission, one new scope and a code check, so it shows how Descope and the MCP server split the job:
+
+1. **Authorization → Permissions → + Permission:** `salaries:read:team`, "View salaries of your direct reports (read only)".
+2. **Authorization → Roles → Manager → edit:** tick `salaries:read:team`. Save.
+3. **Agentic Identity Hub → MCP Servers → Matrix Technologies HR → MCP Server Scopes → + Scope:** `hr:team-salaries`, "See your direct reports' salaries", optional. Save.
+4. **Access Policy → Matrix HR - Managers → edit → Targets:** also tick `hr:team-salaries`, so it shows "Matrix Technologies HR (4)". Save.
+5. **Flows → Matrix HR consent → Consent Screen - Manager:** add the line "✓ See your direct reports' salaries". Save.
+
+The MCP server maps `hr:team-salaries` to `salaries:read:team`, and then checks that the employee's manager is the caller. Descope says *what kind* of access Mark has; the app decides *whose* records that covers, because only the app knows the org chart.
+
+Talking point: Mark can ask "What do Emma and Raj earn?" and get answers, but "What does Sofia earn?" is denied (not his report), and "Set Emma's salary" is denied (read only).
 
 ### 3.5 Copy the discovery and issuer URLs
 
