@@ -131,15 +131,18 @@ Without policies, the consent screen offers every scope to everyone. Emma (Emplo
 
 | Rule name | Subjects | Targets (resource → scopes) | Grant type |
 | --- | --- | --- | --- |
-| Matrix HR - Employees | Users, custom condition `user.roles` **contains** `Employee` | Matrix Technologies HR → `hr:profile`, `hr:expenses` | Authorization code |
-| Matrix HR - Managers | Users, custom condition `user.roles` **contains** `Manager` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals` | Authorization code |
-| Matrix HR - HR Admins | Users, custom condition `user.roles` **contains** `HR Admin` | Matrix Technologies HR → all 4 scopes | Authorization code |
+| Matrix HR - Employees | Custom conditions: roles is one of `Employee` | Matrix Technologies HR → `hr:profile`, `hr:expenses` | User access |
+| Matrix HR - Managers | Custom conditions: roles is one of `Manager` | Matrix Technologies HR → `hr:profile`, `hr:expenses`, `hr:approvals` | User access |
+| Matrix HR - HR Admins | Custom conditions: roles is one of `HR Admin` | Matrix Technologies HR → all 4 scopes | User access |
 
-For each rule:
-1. **Subjects:** choose users, then add a **custom condition**: key `user.roles`, operator **Contains**, value the role name.
-2. **Targets:** choose **Specified**, pick the **Matrix Technologies HR** resource, and tick only that rule's scopes.
-3. **Grant types:** Authorization code. This is the user login Claude uses.
-4. Save, and make sure the rule is **enabled**.
+For each rule (**Access Policy → + Rule**):
+1. **Rule name**, for example `Matrix HR - Employees`.
+2. **Subjects:** choose **Custom conditions**, then **roles** · **is one of** · the role name (`Employee`, `Manager` or `HR Admin`).
+3. **Targets:** **Resources** tab → **Specified** → **Matrix Technologies HR** → tick only that rule's scopes. The list then shows "Matrix Technologies HR (2)", "(3)" or "(4)".
+4. **Grant type:** **User access**. This is the user login Claude uses (authorization code).
+5. **Allow**, then **Create**. The rule shows as **Active**.
+
+The list already contains a **Default rule** ("Blocks any request", Block). Leave it as the **last** rule. New rules are added above it, so anyone who isn't an Employee, Manager or HR Admin gets nothing.
 
 Then switch the MCP server to policy mode: **Resources → Matrix Technologies HR → User access → Allow via policy**. Save.
 
