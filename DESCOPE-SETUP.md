@@ -163,9 +163,9 @@ The standard consent screen (3.4b) still lists all 4 scopes for this MCP server,
 **Flows → Inbound apps - user consent → ⋯ → Duplicate.** Name it `Matrix HR consent` (flow ID `matrix-hr-consent`). In the copy:
 
 1. **Replace the "Is inbound app verified?" condition** (after "Is consent already granted?" → False) with a new **Condition** named `Which Matrix role?`, with 3 branches plus Else:
-   - `Employee`: **user.roles** · **Contains** · `Employee`
-   - `Manager`: **user.roles** · **Contains** · `Manager`
-   - `HR Admin`: **user.roles** · **Contains** · `HR Admin`
+   - `Employee`: **user.project.roles** · **Contains** · `Employee`
+   - `Manager`: **user.project.roles** · **Contains** · `Manager`
+   - `HR Admin`: **user.project.roles** · **Contains** · `HR Admin`
    - **Else** → End (a user with no Matrix role gets nothing).
 2. **Make 3 consent screens**, one per branch: `Consent Screen - Employee`, `- Manager`, `- HR Admin`. Start from the existing consent screen, delete the **Inbound App Scopes** component, and put a **Text** component in its place listing that role's scopes:
    - Employee: ✓ See your own profile and pay, ✓ See and submit your own expenses
