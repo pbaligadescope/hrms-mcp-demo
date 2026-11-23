@@ -38,7 +38,7 @@ npm install
 ```
 
 **Browser tabs to have open:**
-- Gmail (for the magic links and codes)
+- The persona inbox (for the magic links and codes)
 - http://localhost:3010
 - Descope console, project **[DESCOPE_PROJECT]**: Roles, Users, Agentic Identity Hub → MCP Servers → Matrix Technologies HR, Access Policy, Flows → Matrix HR consent, Audit
 
@@ -133,7 +133,7 @@ Then **Access Policy:** one rule per role. Each rule allows only that role's sco
 
 ### Emma (Employee)
 
-Claude opens a Descope page. Enter Emma's email and the 6-digit code from Gmail. **Her consent screen lists 2 items.** Click Authorize.
+Claude opens a Descope page. Enter Emma's email and the 6-digit code from the inbox. **Her consent screen lists 2 items.** Click Authorize.
 
 | Prompt | Result |
 | --- | --- |

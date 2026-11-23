@@ -41,7 +41,7 @@ npm run dev
 
 Set `DEMO_STAGE` in `.env.local` to pick the stage (1, 2 or 3). See [DEMO.md](DEMO.md) for the run sheet and [DESCOPE-SETUP.md](DESCOPE-SETUP.md) for every Descope console step.
 
-Open http://localhost:3010, enter one of the persona emails, and click the magic link in Gmail.
+Open http://localhost:3010, enter one of the persona emails, and click the magic link in that inbox.
 
 To put the demo data back to its starting state, stop the server and run `npm run reset`.
 
