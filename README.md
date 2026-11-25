@@ -10,9 +10,9 @@ Claude is the MCP client in stages 2 and 3.
 
 ## The story
 
-![Animated explainer of the three stages](docs/explainer/matrix-mcp-explainer.gif)
+[![Explainer video preview: click to watch the narrated 4-minute version](docs/explainer/matrix-mcp-explainer-preview.gif)](docs/explainer/matrix-mcp-explainer.mp4)
 
-Full video: [docs/explainer/matrix-mcp-explainer.mp4](docs/explainer/matrix-mcp-explainer.mp4)
+▶️ **[Watch the narrated explainer (4 min, with sound)](docs/explainer/matrix-mcp-explainer.mp4)**: the three stages plus a walkthrough of the Descope console setup. The preview above is a silent 3× speed cut. Script: [script.md](docs/explainer/script.md), captions: [matrix-mcp-explainer.srt](docs/explainer/matrix-mcp-explainer.srt).
 
 **Stage 1: a normal company portal.** Matrix Technologies runs an internal HR and expenses portal. Employees sign in with Descope, and what they see depends on their role: Emma (Employee) sees her own pay, Mark (Manager) approves his team's expenses, and Hannah (HR Admin) manages everyone's salaries. Everything is locked down the way it should be.
 
