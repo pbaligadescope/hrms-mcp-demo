@@ -1,0 +1,112 @@
+1
+00:00:00,300 --> 00:00:12,374
+Matrix Technologies is an HR and expenses portal. This is the story of how it gave an AI assistant access to its data, and how to do that safely, with Descope.
+
+2
+00:00:13,466 --> 00:00:20,464
+Stage one. Employees sign in to the portal with Descope, using a magic link or a one-time code.
+
+3
+00:00:21,566 --> 00:00:27,390
+There are three roles. Emma is an employee. Mark is a manager. And Hannah runs HR.
+
+4
+00:00:28,500 --> 00:00:35,390
+Those roles and permissions live in Descope, and the portal checks them on every page, and on every change.
+
+5
+00:00:36,500 --> 00:00:43,667
+Stage two. The team ships an MCP server, so assistants like Claude can use Matrix directly.
+
+6
+00:00:44,766 --> 00:00:50,718
+But the server never asks who is calling. Ask it who you are, and the answer is: anonymous.
+
+7
+00:00:51,833 --> 00:00:58,254
+So anyone who knows the URL can list every employee's salary, all the way up to the CEO.
+
+8
+00:01:00,066 --> 00:01:06,488
+They can even change someone's pay. And the activity log can only say that somebody anonymous did it.
+
+9
+00:01:10,200 --> 00:01:14,743
+Stage three. Same URL, but now Descope stands in front of it.
+
+10
+00:01:15,833 --> 00:01:19,545
+When Claude connects, the person signs in with Descope first,
+
+11
+00:01:20,633 --> 00:01:23,107
+and approves what Claude is allowed to do.
+
+12
+00:01:24,199 --> 00:01:30,706
+Descope's access policy then decides which scopes go into the token, based on that person's role.
+
+13
+00:01:31,799 --> 00:01:36,983
+The token belongs to one person, and the MCP server checks it on every call.
+
+14
+00:01:38,099 --> 00:01:41,107
+Here's how that is set up in the Descope console.
+
+15
+00:01:42,199 --> 00:01:51,159
+First, the MCP server is registered in the Agentic Identity Hub, using the same local URL the app already serves.
+
+16
+00:01:52,266 --> 00:02:02,805
+It defines five scopes: profile, expenses, approvals, team salaries, and salaries. Each one has a plain-language description for the consent screen.
+
+17
+00:02:03,933 --> 00:02:11,976
+Dynamic client registration is on, so Claude can register itself. Sign-in runs through a custom consent flow.
+
+18
+00:02:13,933 --> 00:02:21,016
+That flow branches on the user's role, so each person sees a consent screen that matches what their role allows.
+
+19
+00:02:22,133 --> 00:02:33,632
+Under Authorization, the roles and permissions are the same ones the portal already uses: Employee, Manager, and HR Admin, each with its own set of permissions.
+
+20
+00:02:40,633 --> 00:02:51,022
+Finally, the access policy. There's one rule per role, plus a default rule at the bottom that blocks everything else. Each rule matches on the user's role,
+
+21
+00:02:52,133 --> 00:03:01,754
+targets the Matrix MCP server, and lists exactly which scopes that role may receive. It applies to user access, and it's set to allow.
+
+22
+00:03:06,633 --> 00:03:13,908
+Now, the same questions, asked as real people. Emma, an employee, asks what the CEO earns. Denied.
+
+23
+00:03:15,000 --> 00:03:17,837
+But she can still file her own taxi expense.
+
+24
+00:03:20,466 --> 00:03:24,413
+Mark is a manager. He can see the pay of his direct reports,
+
+25
+00:03:25,600 --> 00:03:32,149
+but not anyone outside his team. Descope says what kind of access. The app decides whose records.
+
+26
+00:03:33,233 --> 00:03:36,604
+Hannah, the HR admin, can see every salary,
+
+27
+00:03:39,100 --> 00:03:46,033
+and she can change one. This time, the activity log records her name, along with every denied attempt.
+
+28
+00:03:48,500 --> 00:03:57,268
+An MCP server is a new front door to your app. Give it the same identity and authorization as the rest of the app, with Descope.
+
